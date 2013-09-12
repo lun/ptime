@@ -68,7 +68,6 @@ class Format(object):
         regexp = []
         attributes = []
         had_percent = False
-        previous = None
         for character in template:
             if character == '%':
                 if had_percent:
@@ -86,7 +85,7 @@ class Format(object):
                 had_percent = False
             else:
                 regexp.append(character)
-        return (''.join(regexp), attributes)
+        return ''.join(regexp), attributes
 
     def __eq__(self, other):
         if not isinstance(other, Format):
