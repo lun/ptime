@@ -40,13 +40,13 @@ class Parser(object):
             if hasattr(self, parser):
                 components = getattr(self, parser)(value, base)
                 if components is None:
-                    raise ParserError("Failed to parse '%s'" % part)
+                    raise ParserError("Failed to parse %r" % part)
                 present = [key for key in components if key in parts]
                 parts.update(components)
             elif part in self.INTEGER_ATTRIBUTES:
                 parts[part] = int(value)
             else:
-                raise ParserError("Unsupported attribute '%s'" % part)
+                raise ParserError("Unsupported attribute %r" % part)
 
         parts = self.compose(parts)
         parts = self.complete(parts, base)
@@ -139,7 +139,7 @@ class Parser(object):
                 return {'year': date.year, 'day': date.day, 'month': date.month}
 
     def parse_days_ago(self, value, base):
-        parts = re.split(r'\s+', value)
+        parts = value.split()
         absolute_delta = int(parts[0])
         words = ' '.join(word.lower() for word in parts[1:])
         delta_days = None

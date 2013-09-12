@@ -84,3 +84,8 @@ class TestParser(TestCase):
         base = datetime.now().replace(minute=0, second=0, microsecond=0) - timedelta(hours=1)
         result = Parser(Format('%i')).parse('30', base)
         self.assertEquals(result, base.replace(minute=30) - timedelta(hours=1))
+
+    def test_completion_boundary_cases(self):
+        base = datetime(2013, 9, 13, 1)
+        result = Parser(Format('%i')).parse('30', base)
+        self.assertEquals(result, datetime(2013, 9, 12, 23, 30))
