@@ -36,7 +36,7 @@ class Language(object):
             return self.languages[code]
         directory = os.path.dirname(os.path.realpath(__file__))
         filename = os.path.join(directory, 'languages', '%s.json' % code)
-        with open(filename, 'r') as stream:
+        with open(filename) as stream:
             language = Language(*json.load(stream))
             self.languages[code] = language
             return language
