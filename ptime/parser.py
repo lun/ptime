@@ -77,14 +77,13 @@ class Parser(object):
         useful = self.ATTRIBUTE_ORDER + ['tzinfo']
         result = {attr: parts[attr] if attr in parts else getattr(base, attr) for attr in useful}
 
-        now = datetime.now()
         for attr in self.ATTRIBUTE_ORDER:
             if parts.get(attr):
                 continue
             while True:
                 timestamp = self.construct_datetime(result)
                 # todo: use self.prefers_future
-                if timestamp <= now or result[attr] == 0:
+                if timestamp <= base or result[attr] == 0:
                     break
                 result[attr] -= 1
         return result

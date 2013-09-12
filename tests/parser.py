@@ -79,3 +79,8 @@ class TestParser(TestCase):
         parser = Parser(Format('%L'), [Language.fromcode('en')])
         result = parser.parse('yesterday', now)
         self.assertEquals(result.date(), now.date() - timedelta(days=1))
+
+    def test_custom_base(self):
+        base = datetime.now().replace(minute=0, second=0, microsecond=0) - timedelta(hours=1)
+        result = Parser(Format('%i')).parse('30', base)
+        self.assertEquals(result, base.replace(minute=30) - timedelta(hours=1))
