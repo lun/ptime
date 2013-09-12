@@ -14,7 +14,7 @@ from pytz import timezone
 from dateutil.tz import tzoffset
 
 
-class ParserException(Exception):
+class ParserError(Exception):
     pass
 
 
@@ -22,54 +22,49 @@ class Parser(object):
     INTEGER_ATTRIBUTES = ['year', 'month', 'day', 'hour', 'minute', 'second', 'microsecond']
     ATTRIBUTE_ORDER = ['second', 'minute', 'hour', 'day', 'month', 'year']
 
-    def __init__(self, format, languages=[], prefers_future=False):
+    def __init__(self, format, languages=None, prefers_future=False):
         self.format = format
-        self.languages = languages
+        self.languages = languages or []
         self.prefers_future = prefers_future
 
     def parse(self, string, base=None):
-        try:
-            base = base if base else datetime.now()
-            match = re.match(self.format.regexp, string)
-            if not match:
-                return None
+        base = base or datetime.now()
+        match = re.match(self.format.regexp, string)
+        if not match:
+            return None
 
-            parts = {}
-            for index, value in enumerate(match.groups()):
-                part = self.format.attributes[index]
-                parser = 'parse_%s' % part
-                if hasattr(self, parser):
-                    components = getattr(self, parser)(value, base)
-                    if components is None:
-                        raise ParserException("Failed to parse '%s'" % part)
-                    present = [key for key in components if key in parts]
-                    parts.update(components)
-                elif part in self.INTEGER_ATTRIBUTES:
-                    parts[part] = int(value)
-                else:
-                    raise ParserException("Unsupported attribute '%s'" % part)
+        parts = {}
+        for index, value in enumerate(match.groups()):
+            part = self.format.attributes[index]
+            parser = 'parse_%s' % part
+            if hasattr(self, parser):
+                components = getattr(self, parser)(value, base)
+                if components is None:
+                    raise ParserError("Failed to parse '%s'" % part)
+                present = [key for key in components if key in parts]
+                parts.update(components)
+            elif part in self.INTEGER_ATTRIBUTES:
+                parts[part] = int(value)
+            else:
+                raise ParserError("Unsupported attribute '%s'" % part)
 
-            parts = self.compose(parts)
-            parts = self.complete(parts, base)
-            return self.construct_datetime(parts)
-        except ParserException:
-            raise
-        except Exception as e:
-            raise ParserException(e)
+        parts = self.compose(parts)
+        parts = self.complete(parts, base)
+        return self.construct_datetime(parts)
 
     def map(self, parts, sources, destination, func):
-        present = [key for key in sources if parts.has_key(key)]
+        present = filter(parts.has_key, sources)
         if not present:
             return parts
         if len(present) < len(sources):
-            raise ParserException("{0} can't be present without {1}",
+            raise ParserError("{0} can't be present without {1}",
                 ', '.join(present), ', '.join(set(sources) - set(present))
             )
         if destination in parts:
-            raise ParserException("{0} can't be present simultaneously with {1}",
+            raise ParserError("{0} can't be present simultaneously with {1}",
                 destination, ', '.join(sources)
             )
-        result = dict([(key, value) for key, value in parts.iteritems() if not key in sources])
+        result = {key: value for key, value in parts.iteritems() if key not in sources}
         result[destination] = func(*[parts[key] for key in sources])
         return result
 
@@ -79,15 +74,12 @@ class Parser(object):
         return parts
 
     def complete(self, parts, base):
-        order = self.ATTRIBUTE_ORDER
-        result = dict(map(
-            lambda attr: (attr, parts[attr] if attr in parts else getattr(base, attr)),
-            order + ['tzinfo']
-        ))
+        useful = self.ATTRIBUTE_ORDER + ['tzinfo']
+        result = {attr: parts[attr] if attr in parts else getattr(base, attr) for attr in useful}
 
         now = datetime.now()
-        for attr in order:
-            if (attr in parts) and (not parts[attr] is None):
+        for attr in self.ATTRIBUTE_ORDER:
+            if parts.get(attr):
                 continue
             while True:
                 timestamp = self.construct_datetime(result)
@@ -110,24 +102,20 @@ class Parser(object):
 
     def parse_month_abbr(self, value, base):
         value = value.lower()
-        result = None
         for language in self.languages:
             month = language.get_month(value)
             if month:
-                result = {'month': month}
-        return result
+                return {'month': month}
 
     def parse_month_name(self, value, base):
         return {'month': self.parse_month_abbr(value[:3])}
 
     def parse_year(self, value, base):
-        result = None
         digits = len(str(value))
         if digits == 4:
-            result = {'year': int(value)}
-        elif digits == 2:
-            result = {'century_year': int(value)}
-        return result
+            return {'year': int(value)}
+        if digits == 2:
+            return {'century_year': int(value)}
 
     def parse_ampm(self, value, base):
         return {'ampm': value.lower()}
@@ -139,32 +127,25 @@ class Parser(object):
         return {'tzinfo': tzoffset(None, int(value))}
 
     def parse_offset_hours(self, value, base):
-        if ':' in value:
-            value = value.replace(':', '')
+        value = value.replace(':', '')
         offset = int(value[:3]) * 3600 + int(value[3:]) * 60
         return {'tzinfo': tzoffset(None, offset)}
 
     def parse_relative_day(self, value, base):
         value = value.lower().strip()
-        delta_days = None
         for language in self.languages:
             delta_days = language.get_offset_for_relative_date(value)
-            if not delta_days is None:
+            if delta_days is not None:
                 date = base.date() + timedelta(delta_days)
                 return {'year': date.year, 'day': date.day, 'month': date.month}
-        return None
 
     def parse_days_ago(self, value, base):
         parts = re.split(r'\s+', value)
-        absolute_delta_days = int(parts[0])
-        words = ' '.join([word.lower() for word in parts[1:]])
+        absolute_delta = int(parts[0])
+        words = ' '.join(word.lower() for word in parts[1:])
         delta_days = None
         for language in self.languages:
             sign = language.get_offset_sign(words, self.prefers_future)
             if sign:
-                delta_days = sign * absolute_delta_days
-                break
-        if delta_days:
-            date = base.date() + timedelta(delta_days)
-            return {'year': date.year, 'day': date.day, 'month': date.month}
-        return None
+                date = base.date() + timedelta(sign * absolute_delta)
+                return {'year': date.year, 'day': date.day, 'month': date.month}

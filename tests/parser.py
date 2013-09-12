@@ -5,7 +5,7 @@ from dateutil.tz import tzoffset
 from datetime import date, datetime, timedelta
 from unittest import TestCase
 
-from ptime import Parser, ParserException, Format, Language
+from ptime import Parser, ParserError, Format, Language
 
 
 class TestParserMethods(TestCase):
@@ -15,8 +15,8 @@ class TestParserMethods(TestCase):
     def test_map(self):
         rules = [('a', 'b'), 'c', (lambda a, b: a + b)]
         self.assertEquals(self.parser.map({'a': 1, 'b': 2, 'd': 0}, *rules), {'c': 3, 'd': 0})
-        self.assertRaises(ParserException, self.parser.map, {'a': 1}, *rules)
-        self.assertRaises(ParserException, self.parser.map, {'a': 1, 'b': 2, 'c': 3}, *rules)
+        self.assertRaises(ParserError, self.parser.map, {'a': 1}, *rules)
+        self.assertRaises(ParserError, self.parser.map, {'a': 1, 'b': 2, 'c': 3}, *rules)
 
     def test_complete(self):
         now = datetime.now().replace(microsecond=0)
@@ -72,7 +72,7 @@ class TestParser(TestCase):
 
     def test_invalid_date(self):
         parser = Parser(Format('%M'))
-        self.assertRaises(ParserException, parser.parse, 'abc')
+        self.assertRaises(ParserError, parser.parse, 'abc')
 
     def test_relative_date(self):
         now = datetime.now()

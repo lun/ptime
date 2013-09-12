@@ -10,7 +10,7 @@
 import re
 
 
-class FormatException(Exception):
+class FormatError(Exception):
     pass
 
 
@@ -74,76 +74,55 @@ class Format(object):
                 if had_percent:
                     regexp.append(character)
                 had_percent = not had_percent
+                continue
+            if had_percent:
+                if not character in self.TEMPLATES:
+                    raise FormatError(
+                        "'%{0}' is not a valid template specifier".format(character)
+                    )
+                pattern, attribute = self.TEMPLATES[character]
+                regexp.extend(['(', pattern, ')'])
+                attributes.append(attribute)
+                had_percent = False
             else:
-                if had_percent:
-                    if not character in self.TEMPLATES:
-                        raise FormatException(
-                            "'%{0}' is not a valid template specifier".format(character)
-                        )
-                    pattern, attribute = self.TEMPLATES[character]
-                    regexp.extend(['(', pattern, ')'])
-                    attributes.append(attribute)
-                    had_percent = False
-                else:
-                    regexp.append(character)
+                regexp.append(character)
         return (''.join(regexp), attributes)
 
     def __eq__(self, other):
-        if type(other) is type(self):
-            return self.__dict__ == other.__dict__
-        return False
+        if not isinstance(other, Format):
+            return False
+        return self.__dict__ == other.__dict__
 
     @classmethod
-    def iso8601(self):
+    def iso8601(cls):
         # not all variations of ISO-8601 datetime are supported currently
-        return Format(r'%Y-%m-%d(?:T|\s)%H:%i(?::%s)?(?:%R)')
+        return cls(r'%Y-%m-%d(?:T|\s)%H:%i(?::%s)?(?:%R)')
 
     @classmethod
-    def rfc822(self):
-        return Format(r'%D, %d %M %Y %H:%i:%s %O')
+    def rfc822(cls):
+        return cls(r'%D, %d %M %Y %H:%i:%s %O')
 
     @classmethod
-    def rfc3339(self):
-        return Format(r'%Y-%m-%dT%H:%i:%s%P')
+    def rfc3339(cls):
+        return cls(r'%Y-%m-%dT%H:%i:%s%P')
 
     @classmethod
-    def rfc850(self):
-        return Format(r'%l, %d-%M-%y %H:%i:%s %T')
+    def rfc850(cls):
+        return cls(r'%l, %d-%M-%y %H:%i:%s %T')
 
     @classmethod
-    def mysql(self):
-        return Format(r'%Y-%m-%d %H:%i:%s')
+    def mysql(cls):
+        return cls(r'%Y-%m-%d %H:%i:%s')
 
-    # RFC 822 aliases #
+    # RFC 822 aliases
+    rfc1036 = rfc822
+    rfc1123 = rfc822
+    rfc2822 = rfc822
+    rss     = rfc822
 
-    @classmethod
-    def rfc1036(self):
-        return self.rfc822()
+    # RFC 850 aliases
+    cookie  = rfc850
 
-    @classmethod
-    def rfc1123(self):
-        return self.rfc822()
-
-    @classmethod
-    def rfc2822(self):
-        return self.rfc822()
-
-    @classmethod
-    def rss(self):
-        return self.rfc822()
-
-    # RFC 850 aliases #
-
-    @classmethod
-    def cookie(self):
-        return self.rfc850()
-
-    # RFC 3339 aliases #
-
-    @classmethod
-    def w3c(self):
-        return self.rfc3339()
-
-    @classmethod
-    def atom(self):
-        return self.rfc3339()
+    # RFC 3339 aliases
+    w3c     = rfc3339
+    atom    = rfc3339

@@ -7,6 +7,6 @@
     :license: MIT, see LICENSE for more details.
 """
 
-from .format import Format, FormatException
+from .format import Format, FormatError
 from .language import Language
-from .parser import Parser, ParserException
+from .parser import Parser, ParserError

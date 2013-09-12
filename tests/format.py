@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 from unittest import TestCase
 
-from ptime import Format, FormatException
+from ptime import Format, FormatError
 
 
 class TestFormat(TestCase):
@@ -18,7 +18,7 @@ class TestFormat(TestCase):
         self.assertEquals(regexp, '%%')
 
     def test_invalid_template(self):
-        self.assertRaises(FormatException, Format, '%~')
+        self.assertRaises(FormatError, Format, '%~')
 
     def test_basic_format(self):
         regexp = Format('%Y-%m-%d').regexp
@@ -45,26 +45,3 @@ class TestStandardFormats(TestCase):
     def test_mysql(self):
         regexp = Format.mysql().regexp
         self.assertIsNotNone(re.match(regexp, '2013-09-11 19:17:39'))
-
-
-class TestShorthandMethods(TestCase):
-    def test_rfc1036(self):
-        self.assertEquals(Format.rfc1036(), Format.rfc822())
-
-    def test_rfc1123(self):
-        self.assertEquals(Format.rfc1123(), Format.rfc822())
-
-    def test_rfc2822(self):
-        self.assertEquals(Format.rfc2822(), Format.rfc822())
-
-    def test_rss(self):
-        self.assertEquals(Format.rss(), Format.rfc822())
-
-    def test_cookie(self):
-        self.assertEquals(Format.cookie(), Format.rfc850())
-
-    def test_w3c(self):
-        self.assertEquals(Format.w3c(), Format.rfc3339())
-
-    def test_atom(self):
-        self.assertEquals(Format.atom(), Format.rfc3339())
