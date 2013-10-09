@@ -11,7 +11,7 @@ from ptime import Format, FormatError
 class TestFormat(TestCase):
     def test_qualifiers(self):
         regexp = Format('').regexp
-        self.assertEquals(regexp, re.compile(r'^$', re.IGNORECASE))
+        self.assertEquals(regexp, re.compile(r'^$', re.IGNORECASE | re.UNICODE))
 
     def test_escaping(self):
         regexp, attrs = Format('').parse_template('%%%%')

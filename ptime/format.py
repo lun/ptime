@@ -61,7 +61,7 @@ class Format(object):
     def __init__(self, template):
         self.template = template
         regexp, attributes = self.parse_template(template)
-        self.regexp = re.compile(r'^%s$' % regexp, re.IGNORECASE)
+        self.regexp = re.compile(r'^%s$' % regexp, re.IGNORECASE | re.UNICODE)
         self.attributes = attributes
 
     def parse_template(self, template):
