@@ -107,7 +107,7 @@ class Parser(object):
                 return {'month': month}
 
     def parse_month_name(self, value, base):
-        return {'month': self.parse_month_abbr(value[:3])}
+        return self.parse_month_abbr(value[:3], base)
 
     def parse_year(self, value, base):
         digits = len(str(value))

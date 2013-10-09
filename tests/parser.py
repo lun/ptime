@@ -35,7 +35,7 @@ class TestParserMethods(TestCase):
         self.assertEquals(self.parser.parse_month_abbr('feb', None), {'month': 2})
 
     def test_parse_month_name(self):
-        self.assertEquals(self.parser.parse_month_abbr('feburary', None), {'month': 2})
+        self.assertEquals(self.parser.parse_month_name('feburary', None), {'month': 2})
 
     def test_parse_year(self):
         self.assertEquals(self.parser.parse_year('2013', None), {'year': 2013})
