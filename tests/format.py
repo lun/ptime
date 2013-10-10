@@ -37,6 +37,7 @@ class TestStandardFormats(TestCase):
     def test_rfc3339(self):
         regexp = Format.rfc3339().regexp
         self.assertIsNotNone(re.match(regexp, '2013-09-11T19:13:02+03:00'))
+        self.assertIsNotNone(re.match(regexp, '2013-09-11T19:13:02.654321+03:00'))
 
     def test_rfc850(self):
         regexp = Format.rfc850().regexp

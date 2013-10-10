@@ -45,7 +45,7 @@ class Format(object):
         'H': (r'\d{2}',                     'hour'),
         'i': (r'\d{2}',                     'minute'),
         's': (r'\d{2}',                     'second'),
-        'u': (r'\d{2}',                     'microsecond'),
+        'u': (r'\d{6}',                     'microsecond'),
         # timezones #
         'e': (r'[a-z\/]+',                  'timezone'),
         'O': (r'[+-]\d{4}',                 'offset_hours'),
@@ -103,7 +103,7 @@ class Format(object):
 
     @classmethod
     def rfc3339(cls):
-        return cls(r'%Y-%m-%dT%H:%i:%s%P')
+        return cls(r'%Y-%m-%dT%H:%i:%s(?:\.%u)?%P')
 
     @classmethod
     def rfc850(cls):
