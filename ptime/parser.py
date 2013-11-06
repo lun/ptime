@@ -7,6 +7,8 @@
     :license: MIT, see LICENSE for more details.
 """
 
+from . import completion
+
 import re
 
 from datetime import datetime, timedelta
@@ -20,7 +22,6 @@ class ParserError(Exception):
 
 class Parser(object):
     INTEGER_ATTRIBUTES = ['year', 'month', 'day', 'hour', 'minute', 'second', 'microsecond']
-    ATTRIBUTE_ORDER = ['second', 'minute', 'hour', 'day', 'month', 'year']
 
     def __init__(self, format, languages=None, prefers_future=False):
         self.format = format
@@ -48,48 +49,16 @@ class Parser(object):
             else:
                 raise ParserError("Unsupported attribute %r" % part)
 
-        parts = self.compose(parts)
-        parts = self.complete(parts, base)
-        return self.construct_datetime(parts)
+        return self.mktime(self.complete(parts, base))
 
-    def map(self, parts, sources, destination, func):
-        present = filter(parts.has_key, sources)
-        if not present:
-            return parts
-        if len(present) < len(sources):
-            raise ParserError("{0} can't be present without {1}",
-                ', '.join(present), ', '.join(set(sources) - set(present))
-            )
-        if destination in parts:
-            raise ParserError("{0} can't be present simultaneously with {1}",
-                destination, ', '.join(sources)
-            )
-        result = {key: value for key, value in parts.iteritems() if key not in sources}
-        result[destination] = func(*[parts[key] for key in sources])
-        return result
-
-    def compose(self, parts):
-        parts = self.map(parts, ('century', 'century_year'), 'year', lambda x, y: x * 100 + y)
-        parts = self.map(parts, ('hour_ampm', 'ampm'), 'hour', lambda x, y: x + [0, 12][y=='pm'])
-        return parts
+    def mktime(self, parts):
+        return completion.mktime(parts)
 
     def complete(self, parts, base):
-        useful = self.ATTRIBUTE_ORDER + ['tzinfo']
-        result = {attr: parts[attr] if attr in parts else getattr(base, attr) for attr in useful}
-
-        for attr in self.ATTRIBUTE_ORDER:
-            if parts.get(attr):
-                continue
-            while True:
-                timestamp = self.construct_datetime(result)
-                # todo: use self.prefers_future
-                if timestamp <= base or result[attr] == 0:
-                    break
-                result[attr] -= 1
-        return result
-
-    def construct_datetime(self, parts):
-        return datetime(**parts)
+        parts = completion.unpack(parts)
+        if self.prefers_future:
+            return completion.complete_future(parts, base)
+        return completion.complete_past(parts, base)
 
     def parse_weekday(self, value, base):
         # todo
@@ -109,15 +78,9 @@ class Parser(object):
     def parse_month_name(self, value, base):
         return self.parse_month_abbr(value[:3], base)
 
-    def parse_year(self, value, base):
-        digits = len(str(value))
-        if digits == 4:
-            return {'year': int(value)}
-        if digits == 2:
-            return {'century_year': int(value)}
-
     def parse_ampm(self, value, base):
-        return {'ampm': value.lower()}
+        result = 1 if value.lower() == 'pm' else 0
+        return {'ampm': result}
 
     def parse_timezone(self, value, base):
         return {'tzinfo': timezone(value)}

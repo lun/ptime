@@ -12,18 +12,12 @@ class TestParserMethods(TestCase):
     def setUp(self):
         self.parser = Parser(Format(''), [Language.fromcode('en')])
 
-    def test_map(self):
-        rules = [('a', 'b'), 'c', (lambda a, b: a + b)]
-        self.assertEquals(self.parser.map({'a': 1, 'b': 2, 'd': 0}, *rules), {'c': 3, 'd': 0})
-        self.assertRaises(ParserError, self.parser.map, {'a': 1}, *rules)
-        self.assertRaises(ParserError, self.parser.map, {'a': 1, 'b': 2, 'c': 3}, *rules)
-
     def test_complete(self):
         now = datetime.now().replace(microsecond=0)
         target = now + timedelta(hours=1)
         attrs = {'hour': target.hour, 'minute': target.minute, 'second': target.second}
         result = self.parser.complete(attrs, now)
-        self.assertEquals(datetime(**result), now - timedelta(hours=23))
+        self.assertEquals(self.parser.mktime(result), now - timedelta(hours=23))
 
     def test_parse_weekday(self):
         pass
@@ -37,13 +31,8 @@ class TestParserMethods(TestCase):
     def test_parse_month_name(self):
         self.assertEquals(self.parser.parse_month_name('feburary', None), {'month': 2})
 
-    def test_parse_year(self):
-        self.assertEquals(self.parser.parse_year('2013', None), {'year': 2013})
-        self.assertEquals(self.parser.parse_year('13', None), {'century_year': 13})
-        self.assertIsNone(self.parser.parse_year('991', None), None)
-
     def test_parse_ampm(self):
-        self.assertEquals(self.parser.parse_ampm('AM', None), {'ampm': 'am'})
+        self.assertEquals(self.parser.parse_ampm('PM', None), {'ampm': 1})
 
     # timezones are not tested for the sake of perfomance #
 
@@ -86,6 +75,10 @@ class TestParser(TestCase):
         self.assertEquals(result, base.replace(minute=30) - timedelta(hours=1))
 
     def test_completion_boundary_cases(self):
-        base = datetime(2013, 9, 13, 1)
+        base = datetime(2013, 9, 13, 0)
         result = Parser(Format('%i')).parse('30', base)
         self.assertEquals(result, datetime(2013, 9, 12, 23, 30))
+
+    def test_century_year(self):
+        result = Parser(Format('%d.%m.%y')).parse('30.10.13')
+        self.assertEquals(result.date(), date(2013, 10, 30))

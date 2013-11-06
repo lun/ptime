@@ -39,9 +39,9 @@ class Format(object):
         # time #
         'a': (r'(?:am)|(?:pm)',             'ampm'),
         'A': (r'(?:am)|(?:pm)',             'ampm'),
-        'g': (r'\d{1,2}',                   'hour_ampm'),
+        'g': (r'\d{1,2}',                   'hour'),
         'G': (r'\d{1,2}',                   'hour'),
-        'h': (r'\d{2}',                     'hour_ampm'),
+        'h': (r'\d{2}',                     'hour'),
         'H': (r'\d{2}',                     'hour'),
         'i': (r'\d{2}',                     'minute'),
         's': (r'\d{2}',                     'second'),
