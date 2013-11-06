@@ -55,10 +55,13 @@ def fill(parts, get_default):
     copy = {}
     for attr in ATTRIBUTES:
         copy[attr] = parts[attr] if attr in parts else get_default(attr, copy)
+    for attr in parts:
+        copy[attr] = copy[attr] if attr in copy else parts[attr]
     return copy
 
 
 def complete_past(parts, base):
+    parts['tzinfo'] = parts.get('tzinfo') or base.tzinfo
     parts = dict(parts)
     for attribute in ATTRIBUTES:
         if attribute in parts:
@@ -74,6 +77,7 @@ def complete_past(parts, base):
 
 
 def complete_future(parts, base):
+    parts['tzinfo'] = parts.get('tzinfo') or base.tzinfo
     parts = dict(parts)
     for attribute in ATTRIBUTES:
         if attribute in parts:

@@ -13,7 +13,7 @@ class TestParserMethods(TestCase):
         self.parser = Parser(Format(''), [Language.fromcode('en')])
 
     def test_complete(self):
-        now = datetime.now().replace(microsecond=0)
+        now = datetime.now(tzoffset(None, 0)).replace(microsecond=0)
         target = now + timedelta(hours=1)
         attrs = {'hour': target.hour, 'minute': target.minute, 'second': target.second}
         result = self.parser.complete(attrs, now)
