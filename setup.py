@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='ptime',
-    version='0.1.3',
+    version='0.1.4',
     url='http://github.com/Ibadinov/ptime',
     license='MIT',
     author='Marat Ibadinov',

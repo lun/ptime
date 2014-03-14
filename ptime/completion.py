@@ -12,8 +12,12 @@ from datetime import datetime
 
 
 ATTRIBUTES = ['century', 'year', 'month', 'day', 'ampm', 'hour', 'minute', 'second']
-MINIMUMS = {'century': 19, 'year': 0, 'month': 1, 'day': 1, 'ampm': 0, 'hour': 0, 'minute': 0, 'second': 0}
-MAXIMUMS = {'century': 20, 'year': 99, 'month': 12, 'ampm': 1, 'hour': 11, 'minute': 59, 'second': 0}
+MINIMUMS = {
+    'century': 19, 'year': 0, 'month': 1, 'day': 1, 'ampm': 0, 'hour': 0, 'minute': 0, 'second': 0
+}
+MAXIMUMS = {
+    'century': 20, 'year': 99, 'month': 12, 'ampm': 1, 'hour': 11, 'minute': 59, 'second': 0
+}
 
 
 def get_min(attribute, parts):
@@ -68,11 +72,12 @@ def complete_past(parts, base):
             continue
         copy = fill(parts, get_min)
         bound = get_max(attribute, copy)
-        while copy[attribute] < bound and mktime(copy) < base:
-            copy[attribute] += 1
-        if mktime(copy) > base:
-            copy[attribute] -= 1
         parts[attribute] = copy[attribute]
+        while parts[attribute] < bound and mktime(copy) < base:
+            parts[attribute] += 1
+            copy = fill(parts, get_min)
+        if mktime(copy) > base:
+            parts[attribute] -= 1
     return parts
 
 
@@ -84,9 +89,10 @@ def complete_future(parts, base):
             continue
         copy = fill(parts, get_max)
         bound = get_min(attribute, copy)
-        while copy[attribute] > bound and mktime(copy) > base:
-            copy[attribute] -= 1
-        if mktime(copy) < base:
-            copy[attribute] += 1
         parts[attribute] = copy[attribute]
+        while parts[attribute] > bound and mktime(copy) > base:
+            parts[attribute] -= 1
+            copy = fill(parts, get_max)
+        if mktime(copy) < base:
+            parts[attribute] += 1
     return parts
