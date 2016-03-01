@@ -76,7 +76,7 @@ def complete_past(parts, base):
         while parts[attribute] < bound and mktime(copy) < base:
             parts[attribute] += 1
             copy = fill(parts, get_min)
-        if mktime(copy) > base:
+        if mktime(copy) > base and parts[attribute] > get_min(attribute, parts):
             parts[attribute] -= 1
     return parts
 
@@ -93,6 +93,6 @@ def complete_future(parts, base):
         while parts[attribute] > bound and mktime(copy) > base:
             parts[attribute] -= 1
             copy = fill(parts, get_max)
-        if mktime(copy) < base:
+        if mktime(copy) < base and parts[attribute] < get_max(attribute, parts):
             parts[attribute] += 1
     return parts
