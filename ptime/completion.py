@@ -40,7 +40,7 @@ def pack(parts):
 def unpack(parts):
     result = dict(parts)
     hour = parts.get('hour')
-    if hour:
+    if hour is not None:
         result['hour'], result['ampm'] = (hour - 12, 1) if hour > 12 else (hour, 0)
     year = parts.get('year')
     if year:
