@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     ptime.completion
     ~~~~~~~~~~~~~~~~
@@ -11,12 +10,34 @@ from calendar import monthrange
 from datetime import datetime
 
 
-ATTRIBUTES = ['century', 'year', 'month', 'day', 'ampm', 'hour', 'minute', 'second']
+ATTRIBUTES = [
+    'century',
+    'year',
+    'month',
+    'day',
+    'ampm',
+    'hour',
+    'minute',
+    'second',
+]
 MINIMUMS = {
-    'century': 19, 'year': 0, 'month': 1, 'day': 1, 'ampm': 0, 'hour': 0, 'minute': 0, 'second': 0
+    'century': 19,
+    'year': 0,
+    'month': 1,
+    'day': 1,
+    'ampm': 0,
+    'hour': 0,
+    'minute': 0,
+    'second': 0,
 }
 MAXIMUMS = {
-    'century': 20, 'year': 99, 'month': 12, 'ampm': 1, 'hour': 11, 'minute': 59, 'second': 0
+    'century': 20,
+    'year': 99,
+    'month': 12,
+    'ampm': 1,
+    'hour': 11,
+    'minute': 59,
+    'second': 0,
 }
 
 
@@ -31,7 +52,11 @@ def get_max(attribute, parts):
 
 
 def pack(parts):
-    result = {attr: value for attr, value in parts.items() if attr not in ['century', 'ampm']}
+    result = {
+        attr: value
+        for attr, value in parts.items()
+        if attr not in ['century', 'ampm']
+    }
     result['year'] = parts['century'] * 100 + parts['year']
     result['hour'] = [0, 12][parts['ampm']] + parts['hour']
     return result
@@ -41,11 +66,12 @@ def unpack(parts):
     result = dict(parts)
     hour = parts.get('hour')
     if hour is not None:
-        result['hour'], result['ampm'] = (hour - 12, 1) if hour > 12 else (hour, 0)
+        result['hour'], result['ampm'] = \
+            (hour - 12, 1) if hour > 12 else (hour, 0)
     year = parts.get('year')
     if year:
         if year > 100:
-            result['year'], result['century'] = (year % 100, year / 100)
+            result['year'], result['century'] = (year % 100, year // 100)
         else:
             result['year'] = year
     return result
@@ -76,7 +102,8 @@ def complete_past(parts, base):
         while parts[attribute] < bound and mktime(copy) < base:
             parts[attribute] += 1
             copy = fill(parts, get_min)
-        if mktime(copy) > base and parts[attribute] > get_min(attribute, parts):
+        if mktime(copy) > base \
+                and parts[attribute] > get_min(attribute, parts):
             parts[attribute] -= 1
     return parts
 
@@ -93,6 +120,7 @@ def complete_future(parts, base):
         while parts[attribute] > bound and mktime(copy) > base:
             parts[attribute] -= 1
             copy = fill(parts, get_max)
-        if mktime(copy) < base and parts[attribute] < get_max(attribute, parts):
+        if mktime(copy) < base \
+                and parts[attribute] < get_max(attribute, parts):
             parts[attribute] += 1
     return parts

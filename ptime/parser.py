@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     ptime.parser
     ~~~~~~~~~~~~
@@ -21,7 +20,15 @@ class ParserError(Exception):
 
 
 class Parser(object):
-    INTEGER_ATTRIBUTES = ['year', 'month', 'day', 'hour', 'minute', 'second', 'microsecond']
+    INTEGER_ATTRIBUTES = [
+        'year',
+        'month',
+        'day',
+        'hour',
+        'minute',
+        'second',
+        'microsecond',
+    ]
 
     def __init__(self, format, languages=None, prefers_future=False):
         self.format = format
@@ -42,7 +49,6 @@ class Parser(object):
                 components = getattr(self, parser)(value, base)
                 if components is None:
                     raise ParserError("Failed to parse %r" % part)
-                present = [key for key in components if key in parts]
                 parts.update(components)
             elif part in self.INTEGER_ATTRIBUTES:
                 parts[part] = int(value)
@@ -99,15 +105,22 @@ class Parser(object):
             delta_days = language.get_offset_for_relative_date(value)
             if delta_days is not None:
                 date = base.date() + timedelta(delta_days)
-                return {'year': date.year, 'day': date.day, 'month': date.month}
+                return {
+                    'year': date.year,
+                    'day': date.day,
+                    'month': date.month,
+                }
 
     def parse_days_ago(self, value, base):
         parts = value.split()
         absolute_delta = int(parts[0])
         words = ' '.join(word.lower() for word in parts[1:])
-        delta_days = None
         for language in self.languages:
             sign = language.get_offset_sign(words, self.prefers_future)
             if sign:
                 date = base.date() + timedelta(sign * absolute_delta)
-                return {'year': date.year, 'day': date.day, 'month': date.month}
+                return {
+                    'year': date.year,
+                    'day': date.day,
+                    'month': date.month,
+                }

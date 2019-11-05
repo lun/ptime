@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
+from .format import TestFormat  # noqa: F401
+from .format import TestStandardFormats  # noqa: F401
 
-from .format import TestFormat
-from .format import TestStandardFormats
-
-from .parser import TestParserMethods
-from .parser import TestParser
+from .parser import TestParserMethods  # noqa: F401
+from .parser import TestParser  # noqa: F401
