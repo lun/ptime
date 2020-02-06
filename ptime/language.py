@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
     ptime.language
     ~~~~~~~~~~~~~~
@@ -16,10 +17,7 @@ class Language(object):
     def __init__(self, month_abbreviations, relative_dates, day_offsets):
         self.month_abbreviations = month_abbreviations
         self.relative_dates = relative_dates
-        self.day_offsets = {
-            key: set(value)
-            for key, value in day_offsets.items()
-        }
+        self.day_offsets = {key: set(value) for key, value in day_offsets.iteritems()}
 
     def get_month(self, name):
         abbreviation = name[:3]
@@ -34,12 +32,12 @@ class Language(object):
                 return int(sign)
 
     @classmethod
-    def fromcode(cls, code):
-        if code in cls.languages:
-            return cls.languages[code]
+    def fromcode(self, code):
+        if code in self.languages:
+            return self.languages[code]
         directory = os.path.dirname(os.path.realpath(__file__))
         filename = os.path.join(directory, 'languages', '%s.json' % code)
         with open(filename) as stream:
             language = Language(*json.load(stream))
-            cls.languages[code] = language
+            self.languages[code] = language
             return language

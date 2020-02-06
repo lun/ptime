@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
     ptime.format
     ~~~~~~~~~~~~
@@ -19,16 +20,16 @@ class Format(object):
         'd': (r'\d{2}',                     'day'),
         'D': (r'[a-z]{3}',                  'weekday'),
         'j': (r'(?:[1-9])|(?:[1-3][0-9])',  'day'),
-        'l': (r'[a-zа-я]+',                 'weekday'),
+        'l': (ur'[a-zа-я]+',                'weekday'),
         'N': (r'[1-7]',                     'weekday'),
         'w': (r'[0-6]',                     'weekday'),
         'z': (r'\d{3}',                     'yearday'),
         # week #
         # 'W': (r'\d{1,2}',                 None),
         # month #
-        'F': (r'[a-zа-я]+',                 'month_name'),
+        'F': (ur'[a-zа-я]+',                'month_name'),
         'm': (r'\d{2}',                     'month'),
-        'M': (r'[a-zа-я]{3}',               'month_abbr'),
+        'M': (ur'[a-zа-я]{3}',              'month_abbr'),
         'n': (r'(?:[1-9])|(?:1[0-2])',      'month'),
         # year #
         # 'o': (r'\d{4}',                   'year'), # should correlate with W
@@ -53,8 +54,8 @@ class Format(object):
         'T': (r'[a-z]+',                    'timezone'),
         'Z': (r'(?:+?)\d+',                 'offset_seconds'),
         # relative #
-        'L': (r'(?:[a-zа-яіїєґ]+\s?)+',     'relative_day'),
-        'K': (r'\d+\s+(?:[a-zа-я]+\s?)+',   'days_ago')
+        'L': (ur'(?:[a-zа-яіїєґ]+\s?)+',    'relative_day'),
+        'K': (ur'\d+\s+(?:[a-zа-я]+\s?)+',  'days_ago')
     }
 
     def __init__(self, template):
@@ -74,9 +75,10 @@ class Format(object):
                 had_percent = not had_percent
                 continue
             if had_percent:
-                if character not in self.TEMPLATES:
+                if not character in self.TEMPLATES:
                     raise FormatError(
-                        f"'%{character}' is not a valid template specifier")
+                        "'%{0}' is not a valid template specifier".format(character)
+                    )
                 pattern, attribute = self.TEMPLATES[character]
                 regexp.extend(['(', pattern, ')'])
                 attributes.append(attribute)
@@ -115,11 +117,11 @@ class Format(object):
     rfc1036 = rfc822
     rfc1123 = rfc822
     rfc2822 = rfc822
-    rss = rfc822
+    rss     = rfc822
 
     # RFC 850 aliases
-    cookie = rfc850
+    cookie  = rfc850
 
     # RFC 3339 aliases
-    w3c = rfc3339
-    atom = rfc3339
+    w3c     = rfc3339
+    atom    = rfc3339

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
     ptime
     ~~~~~
@@ -6,6 +7,6 @@
     :license: MIT, see LICENSE for more details.
 """
 
-from .format import Format, FormatError  # noqa: F401
-from .language import Language  # noqa: F401
-from .parser import Parser, ParserError  # noqa: F401
+from .format import Format, FormatError
+from .language import Language
+from .parser import Parser, ParserError
